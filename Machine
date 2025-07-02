@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Comparison</title>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>Enter your name and email to begin:</p>
+  <input id="name" placeholder="Name"><br>
+  <input id="email" placeholder="Email"><br>
+  <button onclick="start()">Start</button>
+
+  <div id="compare" style="display:none;">
+    <h2>Pick the image you prefer</h2>
+    <img id="imgA" src="" width="300" onclick="choose('A')">
+    <img id="imgB" src="" width="300" onclick="choose('B')">
+    <p id="progress"></p>
+  </div>
+
+  <script>
+    const images = [
+      { id: 1, url: "https://drive.google.com/uc?export=view&id=XXXX" },
+      { id: 2, url: "https://drive.google.com/uc?export=view&id=YYYY" },
+      // Add all 19 here
+    ];
+
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const compareDiv = document.getElementById("compare");
+
+    let pairs = [];
+    let current = 0;
+    let userData = [];
+
+    function generatePairs() {
+      for (let i = 0; i < images.length; i++) {
+        for (let j = i + 1; j < images.length; j++) {
+          pairs.push([images[i], images[j]]);
+        }
+      }
+      // Shuffle and limit to 30
+      pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 30);
+    }
+
+    function start() {
+      if (!nameInput.value || !emailInput.value) return alert("Fill in both fields.");
+      generatePairs();
+      document.getElementById("compare").style.display = "block";
+      showNextPair();
+    }
+
+    function showNextPair() {
+      if (current >= pairs.length) {
+        alert("Thanks! You've completed the comparison.");
+        return;
+      }
+      const [a, b] = pairs[current];
+      document.getElementById("imgA").src = a.url;
+      document.getElementById("imgB").src = b.url;
+      document.getElementById("progress").textContent = `Comparison ${current + 1} of ${pairs.length}`;
+    }
+
+    function choose(choice) {
+      const [a, b] = pairs[current];
+      const winner = choice === "A" ? a : b;
+
+      // Send to Google Sheet via Apps Script
+      fetch("https://script.google.com/macros/s/AKfycbzSmkCss3lI4zLMBZ5s7BrrIIeUO_1mjEKmKenpxQYPMXobrepsivVc71L-_lD-Sds1RQ/exec", {
+        method: "POST",
+        body: JSON.stringify({
+          name: nameInput.value,
+          email: emailInput.value,
+          imageA: a.id,
+          imageB: b.id,
+          winner: winner.id
+        }),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      current++;
+      showNextPair();
+    }
+  </script>
+</body>
+</html>
