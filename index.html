@@ -69,3 +69,19 @@
         method: "POST",
         body: JSON.stringify({
           name: nameInput.value,
+          email: emailInput.value,
+          imageA: a.id,
+          imageB: b.id,
+          winner: winner.id
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      current++;
+      showNextPair();
+    }
+  </script>
+</body>
+</html>
