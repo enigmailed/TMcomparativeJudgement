@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Image Comparison</title>
+  <meta charset="UTF-8">
+  <title>Taskmaster Comparative Judgement Machine</title>
 </head>
 <body>
   <h1>Welcome</h1>
   <p>Enter your name and email to begin:</p>
-  <input id="name" placeholder="Name"><br>
-  <input id="email" placeholder="Email"><br>
+  <input id="name" placeholder="Name"><br><br>
+  <input id="email" placeholder="Email"><br><br>
   <button onclick="start()">Start</button>
 
   <div id="compare" style="display:none;">
     <h2>Pick the image you prefer</h2>
-    <img id="imgA" src="" width="300" onclick="choose('A')">
+    <img id="imgA" src="" width="300" onclick="choose('A')" style="margin-right:20px;">
     <img id="imgB" src="" width="300" onclick="choose('B')">
     <p id="progress"></p>
   </div>
 
   <script>
-const images = [
-  { id: 1, name: "Series 1", url: "https://drive.google.com/uc?export=view&id=1-PvWDbatFba6-G3E6f7zmbs9l3konivb" },
-  { id: 2, name: "Series 2", url: "https://drive.google.com/uc?export=view&id=109ywOjSrdjgBVmo1sy6a5Lg1EVGvk1Ic" },
-  { id: 3, name: "Series 3", url: "https://drive.google.com/uc?export=view&id=1sw9LRgKxYPIfdvkOg2mnxcdhWIaFKlGN" },
-  { id: 4, name: "Series 4", url: "https://drive.google.com/uc?export=view&id=1tV_1UF7zMPltecCUs8yW5HXUzHkB9DLq" },
-  { id: 5, name: "Series 5", url: "https://drive.google.com/uc?export=view&id=1AN7eqCWWCHwZDj-21aKv2aMazz71olPA" }
-  // You can add more here when ready
-];
-</script>
+    const images = [
+      { id: 1, name: "Series 1", url: "https://drive.google.com/uc?export=view&id=1-PvWDbatFba6-G3E6f7zmbs9l3konivb" },
+      { id: 2, name: "Series 2", url: "https://drive.google.com/uc?export=view&id=109ywOjSrdjgBVmo1sy6a5Lg1EVGvk1Ic" },
+      { id: 3, name: "Series 3", url: "https://drive.google.com/uc?export=view&id=1sw9LRgKxYPIfdvkOg2mnxcdhWIaFKlGN" },
+      { id: 4, name: "Series 4", url: "https://drive.google.com/uc?export=view&id=1tV_1UF7zMPltecCUs8yW5HXUzHkB9DLq" },
+      { id: 5, name: "Series 5", url: "https://drive.google.com/uc?export=view&id=1AN7eqCWWCHwZDj-21aKv2aMazz71olPA" }
+    ];
 
     const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
@@ -34,7 +33,6 @@ const images = [
 
     let pairs = [];
     let current = 0;
-    let userData = [];
 
     function generatePairs() {
       for (let i = 0; i < images.length; i++) {
@@ -42,7 +40,6 @@ const images = [
           pairs.push([images[i], images[j]]);
         }
       }
-      // Shuffle and limit to 30
       pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 30);
     }
 
@@ -68,22 +65,7 @@ const images = [
       const [a, b] = pairs[current];
       const winner = choice === "A" ? a : b;
 
-      // Send to Google Sheet via Apps Script
       fetch("https://script.google.com/macros/s/AKfycbzSmkCss3lI4zLMBZ5s7BrrIIeUO_1mjEKmKenpxQYPMXobrepsivVc71L-_lD-Sds1RQ/exec", {
         method: "POST",
         body: JSON.stringify({
           name: nameInput.value,
-          email: emailInput.value,
-          imageA: a.id,
-          imageB: b.id,
-          winner: winner.id
-        }),
-        headers: { "Content-Type": "application/json" }
-      });
-
-      current++;
-      showNextPair();
-    }
-  </script>
-</body>
-</html>
