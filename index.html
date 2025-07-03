@@ -41,52 +41,30 @@
     <p id="progress"></p>
   </div>
 
+  <div id="results" style="display:none;">
+    <h2>Your Results</h2>
+    <ol id="resultList"></ol>
+  </div>
+
   <script>
-
-function generatePairs() {
-  pairs = [];
-  for (let i = 0; i < images.length; i++) {
-    for (let j = i + 1; j < images.length; j++) {
-      pairs.push([images[i], images[j]]);
-    }
-  }
-  console.log("All pairs generated:", pairs);
-  pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 30);
-  console.log("Pairs after shuffle and slice:", pairs);
-}
-
-function showNextPair() {
-  if (current >= pairs.length) {
-    alert("Thanks! You've completed the comparison.");
-    return;
-  }
-  const [a, b] = pairs[current];
-  console.log(`Showing pair #${current + 1}`, a.name, b.name);
-  document.getElementById("imgA").src = a.url;
-  document.getElementById("imgB").src = b.url;
-  document.getElementById("imgA").alt = a.name;
-  document.getElementById("imgB").alt = b.name;
-  document.getElementById("progress").textContent = `Comparison ${
-    current + 1
-  } of ${pairs.length}`;
-}
-
-
-const images = [
-  { id: 1, name: "Series 1", url: "https://static.wikia.nocookie.net/task/images/8/8f/Series_1.jpg" },
-  { id: 2, name: "Series 2", url: "https://static.wikia.nocookie.net/task/images/0/05/Series_2.jpg" },
-  { id: 3, name: "Series 3", url: "https://static.wikia.nocookie.net/task/images/3/3a/Series_3.jpg" },
-  { id: 4, name: "Series 4", url: "https://static.wikia.nocookie.net/task/images/3/3c/Series_4.jpg" },
-  { id: 5, name: "Series 5", url: "https://static.wikia.nocookie.net/task/images/f/f3/Series_5.jpg" }
-];
-
+    const images = [
+      { id: 1, name: "Series 1", url: "https://static.wikia.nocookie.net/task/images/8/8f/Series_1.jpg" },
+      { id: 2, name: "Series 2", url: "https://static.wikia.nocookie.net/task/images/0/05/Series_2.jpg" },
+      { id: 3, name: "Series 3", url: "https://static.wikia.nocookie.net/task/images/3/3a/Series_3.jpg" },
+      { id: 4, name: "Series 4", url: "https://static.wikia.nocookie.net/task/images/3/3c/Series_4.jpg" },
+      { id: 5, name: "Series 5", url: "https://static.wikia.nocookie.net/task/images/f/f3/Series_5.jpg" }
+    ];
 
     const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
     const compareDiv = document.getElementById("compare");
+    const resultDiv = document.getElementById("results");
+    const resultList = document.getElementById("resultList");
 
     let pairs = [];
     let current = 0;
+    let scores = {};
+    images.forEach(img => scores[img.id] = 0);
 
     function generatePairs() {
       pairs = [];
@@ -99,43 +77,71 @@ const images = [
     }
 
     function start() {
-      if (!nameInput.value || !emailInput.value)
-        return alert("Fill in both fields.");
+      if (!nameInput.value || !emailInput.value) {
+        alert("Fill in both fields.");
+        return;
+      }
       generatePairs();
       compareDiv.style.display = "block";
+      resultDiv.style.display = "none";
+      current = 0;
+      images.forEach(img => scores[img.id] = 0); // reset scores
       showNextPair();
     }
 
     function showNextPair() {
       if (current >= pairs.length) {
-        alert("Thanks! You've completed the comparison.");
+        showResults();
         return;
       }
       const [a, b] = pairs[current];
       document.getElementById("imgA").src = a.url;
-      document.getElementById("imgB").src = b.url;
       document.getElementById("imgA").alt = a.name;
+      document.getElementById("imgB").src = b.url;
       document.getElementById("imgB").alt = b.name;
-      document.getElementById("progress").textContent = `Comparison ${
-        current + 1
-      } of ${pairs.length}`;
+      document.getElementById("progress").textContent = `Comparison ${current + 1} of ${pairs.length}`;
     }
 
     function choose(choice) {
       const [a, b] = pairs[current];
       const winner = choice === "A" ? a : b;
+      scores[winner.id]++;
 
-      // For now, just log to console
-      console.log("Choice recorded:", {
-        name: nameInput.value,
-        email: emailInput.value,
-        imageA: a.id,
-        imageB: b.id,
-        winner: winner.id,
+      // Optional: send to Google Sheets
+      /*
+      fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
+        method: "POST",
+        body: JSON.stringify({
+          name: nameInput.value,
+          email: emailInput.value,
+          imageA: a.id,
+          imageB: b.id,
+          winner: winner.id
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
       });
+      */
 
       current++;
       showNextPair();
+    }
+
+    function showResults() {
+      compareDiv.style.display = "none";
+      resultDiv.style.display = "block";
+      resultList.innerHTML = "";
+
+      const ranked = images
+        .map(img => ({ ...img, score: scores[img.id] }))
+        .sort((a, b) => b.score - a.score);
+
+      ranked.forEach(img => {
+        const li = document.createElement("li");
+        li.textContent = `${img.name} (Score: ${img.score})`;
+        resultList.appendChild(li);
+      });
     }
   </script>
 </body>
