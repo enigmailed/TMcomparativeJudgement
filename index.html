@@ -107,22 +107,19 @@
       const winner = choice === "A" ? a : b;
       scores[winner.id]++;
 
-      // Optional: send to Google Sheets
-      /*
-      fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
-        method: "POST",
-        body: JSON.stringify({
-          name: nameInput.value,
-          email: emailInput.value,
-          imageA: a.id,
-          imageB: b.id,
-          winner: winner.id
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      */
+      fetch("https://script.google.com/macros/s/AKfycbzSmkCss3lI4zLMBZ5s7BrrIIeUO_1mjEKmKenpxQYPMXobrepsivVc71L-_lD-Sds1RQ/exec", {
+  method: "POST",
+  body: JSON.stringify({
+    name: nameInput.value,
+    email: emailInput.value,
+    imageA: a.id,
+    imageB: b.id,
+    winner: winner.id
+  }),
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
 
       current++;
       showNextPair();
