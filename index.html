@@ -11,7 +11,7 @@
   <img
     src="https://static.wikia.nocookie.net/task/images/8/8f/Series_1.jpg"
     alt="Series 1"
-    width="500"
+    width="300"
   />
 
   <h1>Welcome</h1>
@@ -25,7 +25,7 @@
     <img
       id="imgA"
       src=""
-      width="500"
+      width="300"
       alt="Image A"
       onclick="choose('A')"
       style="margin-right:20px; cursor:pointer;"
@@ -33,7 +33,7 @@
     <img
       id="imgB"
       src=""
-      width="500"
+      width="300"
       alt="Image B"
       onclick="choose('B')"
       style="cursor:pointer;"
@@ -43,7 +43,7 @@
 
   <div id="results" style="display:none;">
     <h2>Your Results</h2>
-    <ol id="resultList"></ol>
+    <ol id="rankingList"></ol>
   </div>
 
   <script>
@@ -58,13 +58,12 @@
     const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
     const compareDiv = document.getElementById("compare");
-    const resultDiv = document.getElementById("results");
-    const resultList = document.getElementById("resultList");
+    const resultsDiv = document.getElementById("results");
+    const rankingList = document.getElementById("rankingList");
 
     let pairs = [];
     let current = 0;
-    let scores = {};
-    images.forEach(img => scores[img.id] = 0);
+    const scores = {};
 
     function generatePairs() {
       pairs = [];
@@ -73,7 +72,7 @@
           pairs.push([images[i], images[j]]);
         }
       }
-      pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 30);
+      pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 10); // Use 10 for quick testing
     }
 
     function start() {
@@ -81,11 +80,13 @@
         alert("Fill in both fields.");
         return;
       }
-      generatePairs();
       compareDiv.style.display = "block";
-      resultDiv.style.display = "none";
+      resultsDiv.style.display = "none";
       current = 0;
-      images.forEach(img => scores[img.id] = 0); // reset scores
+      generatePairs();
+      for (const img of images) {
+        scores[img.id] = 0;
+      }
       showNextPair();
     }
 
@@ -96,8 +97,8 @@
       }
       const [a, b] = pairs[current];
       document.getElementById("imgA").src = a.url;
-      document.getElementById("imgA").alt = a.name;
       document.getElementById("imgB").src = b.url;
+      document.getElementById("imgA").alt = a.name;
       document.getElementById("imgB").alt = b.name;
       document.getElementById("progress").textContent = `Comparison ${current + 1} of ${pairs.length}`;
     }
@@ -107,19 +108,23 @@
       const winner = choice === "A" ? a : b;
       scores[winner.id]++;
 
+      // Send result to Google Sheet via Apps Script
       fetch("https://script.google.com/macros/s/AKfycbzSmkCss3lI4zLMBZ5s7BrrIIeUO_1mjEKmKenpxQYPMXobrepsivVc71L-_lD-Sds1RQ/exec", {
-  method: "POST",
-  body: JSON.stringify({
-    name: nameInput.value,
-    email: emailInput.value,
-    imageA: a.id,
-    imageB: b.id,
-    winner: winner.id
-  }),
-  headers: {
-    "Content-Type": "application/json"
-  }
-});
+        method: "POST",
+        body: JSON.stringify({
+          name: nameInput.value,
+          email: emailInput.value,
+          imageA: a.id,
+          imageB: b.id,
+          winner: winner.id
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.text())
+      .then(data => console.log("Sheet response:", data))
+      .catch(err => console.error("Fetch error:", err));
 
       current++;
       showNextPair();
@@ -127,18 +132,17 @@
 
     function showResults() {
       compareDiv.style.display = "none";
-      resultDiv.style.display = "block";
-      resultList.innerHTML = "";
+      resultsDiv.style.display = "block";
 
-      const ranked = images
-        .map(img => ({ ...img, score: scores[img.id] }))
-        .sort((a, b) => b.score - a.score);
+      // Sort by score
+      const ranked = images.slice().sort((a, b) => scores[b.id] - scores[a.id]);
 
-      ranked.forEach(img => {
+      rankingList.innerHTML = "";
+      for (const image of ranked) {
         const li = document.createElement("li");
-        li.textContent = `${img.name} (Score: ${img.score})`;
-        resultList.appendChild(li);
-      });
+        li.textContent = `${image.name} (Score: ${scores[image.id]})`;
+        rankingList.appendChild(li);
+      }
     }
   </script>
 </body>
