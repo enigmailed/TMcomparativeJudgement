@@ -1,12 +1,166 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Simple Image Test</title>
+  <meta charset="UTF-8" />
+  <title>Taskmaster Comparative Judgement Machine</title>
 </head>
 <body>
 
-  <h1>IMAGE</h1>
-  <img src="https://drive.google.com/uc?export=view&id=1-PvWDbatFba6-G3E6f7zmbs9l3konivb" alt="ALT TEXT" width="300">
+  <!-- Show one sample image before welcome -->
+  <h3>Sample Image (Series 1)</h3>
+  <img
+    src="https://static.wikia.nocookie.net/task/images/8/8f/Series_1.jpg/revision/latest/scale-to-width-down/1000?cb=20210115115439"
+    alt="Series 1"
+    width="500"
+  />
 
+  <h1>Welcome</h1>
+  <p>Enter your name and email to begin:</p>
+  <input id="name" placeholder="Name" /><br /><br />
+  <input id="email" placeholder="Email" /><br /><br />
+  <button onclick="start()">Start</button>
+
+  <div id="compare" style="display:none;">
+    <h2>Pick the image you prefer</h2>
+    <img
+      id="imgA"
+      src=""
+      width="500"
+      alt="Image A"
+      onclick="choose('A')"
+      style="margin-right:20px; cursor:pointer;"
+    />
+    <img
+      id="imgB"
+      src=""
+      width="500"
+      alt="Image B"
+      onclick="choose('B')"
+      style="cursor:pointer;"
+    />
+    <p id="progress"></p>
+  </div>
+
+  <script>
+
+function generatePairs() {
+  pairs = [];
+  for (let i = 0; i < images.length; i++) {
+    for (let j = i + 1; j < images.length; j++) {
+      pairs.push([images[i], images[j]]);
+    }
+  }
+  console.log("All pairs generated:", pairs);
+  pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 30);
+  console.log("Pairs after shuffle and slice:", pairs);
+}
+
+function showNextPair() {
+  if (current >= pairs.length) {
+    alert("Thanks! You've completed the comparison.");
+    return;
+  }
+  const [a, b] = pairs[current];
+  console.log(`Showing pair #${current + 1}`, a.name, b.name);
+  document.getElementById("imgA").src = a.url;
+  document.getElementById("imgB").src = b.url;
+  document.getElementById("imgA").alt = a.name;
+  document.getElementById("imgB").alt = b.name;
+  document.getElementById("progress").textContent = `Comparison ${
+    current + 1
+  } of ${pairs.length}`;
+}
+
+
+    const images = [
+      {
+        id: 1,
+        name: "Series 1",
+        url:
+          "https://static.wikia.nocookie.net/task/images/8/8f/Series_1.jpg/revision/latest/scale-to-width-down/1000?cb=20210115115439",
+      },
+      {
+        id: 2,
+        name: "Series 2",
+        url:
+          "https://static.wikia.nocookie.net/task/images/d/d0/Series_2.jpg/revision/latest/scale-to-width-down/1000?cb=20210115115353",
+      },
+      {
+        id: 3,
+        name: "Series 3",
+        url:
+          "https://static.wikia.nocookie.net/task/images/0/06/Series_3.jpg/revision/latest/scale-to-width-down/1000?cb=20210115115407",
+      },
+      {
+        id: 4,
+        name: "Series 4",
+        url:
+          "https://static.wikia.nocookie.net/task/images/f/f8/Series_4.jpg/revision/latest/scale-to-width-down/1000?cb=20210115115425",
+      },
+      {
+        id: 5,
+        name: "Series 5",
+        url:
+          "https://static.wikia.nocookie.net/task/images/9/9f/Series_5.jpg/revision/latest/scale-to-width-down/1000?cb=20210115115417",
+      },
+    ];
+
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const compareDiv = document.getElementById("compare");
+
+    let pairs = [];
+    let current = 0;
+
+    function generatePairs() {
+      pairs = [];
+      for (let i = 0; i < images.length; i++) {
+        for (let j = i + 1; j < images.length; j++) {
+          pairs.push([images[i], images[j]]);
+        }
+      }
+      pairs = pairs.sort(() => 0.5 - Math.random()).slice(0, 30);
+    }
+
+    function start() {
+      if (!nameInput.value || !emailInput.value)
+        return alert("Fill in both fields.");
+      generatePairs();
+      compareDiv.style.display = "block";
+      showNextPair();
+    }
+
+    function showNextPair() {
+      if (current >= pairs.length) {
+        alert("Thanks! You've completed the comparison.");
+        return;
+      }
+      const [a, b] = pairs[current];
+      document.getElementById("imgA").src = a.url;
+      document.getElementById("imgB").src = b.url;
+      document.getElementById("imgA").alt = a.name;
+      document.getElementById("imgB").alt = b.name;
+      document.getElementById("progress").textContent = `Comparison ${
+        current + 1
+      } of ${pairs.length}`;
+    }
+
+    function choose(choice) {
+      const [a, b] = pairs[current];
+      const winner = choice === "A" ? a : b;
+
+      // For now, just log to console
+      console.log("Choice recorded:", {
+        name: nameInput.value,
+        email: emailInput.value,
+        imageA: a.id,
+        imageB: b.id,
+        winner: winner.id,
+      });
+
+      current++;
+      showNextPair();
+    }
+  </script>
 </body>
 </html>
